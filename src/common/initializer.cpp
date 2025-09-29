@@ -6,7 +6,8 @@
 
 //Compiler wants a reference in a cpp file for some reason
 uint32_t windowWidth;
-uint32_t windowHeight; 
+uint32_t windowHeight;
+glm::vec2 texelSize;
 
 Initializer::Initializer() {}
 
@@ -30,6 +31,8 @@ GLFWwindow* Initializer::createWindow(bool fullscreen) {
         window = glfwCreateWindow(vidMode->width, vidMode->height, "OpenGL", mon, NULL);
         windowWidth = vidMode->width;
         windowHeight = vidMode->height;
+        texelSize.x = 1.0f / windowWidth;
+        texelSize.y = 1.0f / windowHeight;
     }
     else {
         window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL);

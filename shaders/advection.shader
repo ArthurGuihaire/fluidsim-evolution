@@ -15,10 +15,12 @@ void main() {
 #version 330 core
 
 uniform sampler2D inputTexture;
+uniform vec2 texelSize;
 
 out vec3 fragColor;
 in vec2 texCoords;
 
 void main() {
-    fragColor = texture(inputTexture, texCoords).xyz + vec3(0.005f, 0.005f, 0.005f);
+    vec2 velocity = texture(inputTexture, texCoords).xy;
+    fragColor = texture(inputTexture, texCoords + texelSize * velocity).xyz;
 }
