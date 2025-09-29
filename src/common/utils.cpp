@@ -1,12 +1,16 @@
 #include <utils.hpp>
 #include <initializer.hpp>
 #include <gl.h>
+#include <inputMethods.hpp>
 
 GLFWwindow* initOpenGL() {
     Initializer init;
     init.initGLFW(3, 3);
     GLFWwindow* window = init.createWindow(true);
     init.initGLAD();
+
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     return window;
 }
 
@@ -33,7 +37,7 @@ std::pair<uint32_t, uint32_t> createFrameBufferTexture() {
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "Framebuffer complete" << std::endl;
+        std::cout << "Framebuffer " << fbo << " complete" << std::endl;
 
     return std::make_pair(fbo, tex);
 }
@@ -43,4 +47,8 @@ void printOpenGLErrors(const char* printString) {
     while ((err = glGetError()) != GL_NO_ERROR) {
         printf("%s: 0x%x\n", printString, err);
     }
+}
+
+glm::vec2 screenToWorld(glm::vec2& screen) {
+    return {screen.x * 2 / windowWidth - 1, 1 - 2 * screen.y / windowHeight};
 }

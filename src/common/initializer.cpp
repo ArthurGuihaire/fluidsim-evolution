@@ -3,11 +3,13 @@
 #include <gl.h>
 #include <constants.hpp>
 #include <utils.hpp>
+#include <cstring> //For std::memcpy
 
 //Compiler wants a reference in a cpp file for some reason
 uint32_t windowWidth;
 uint32_t windowHeight;
 glm::vec2 texelSize;
+float squareVertices[8];
 
 Initializer::Initializer() {}
 
@@ -31,8 +33,18 @@ GLFWwindow* Initializer::createWindow(bool fullscreen) {
         window = glfwCreateWindow(vidMode->width, vidMode->height, "OpenGL", mon, NULL);
         windowWidth = vidMode->width;
         windowHeight = vidMode->height;
+
         texelSize.x = 1.0f / windowWidth;
         texelSize.y = 1.0f / windowHeight;
+
+        //We can't reinitialize square vertices, but we can memcpy
+        float verticesToCopy[8] = {
+            -20.0f / windowWidth, -20.0f / windowHeight,
+            -20.0f / windowWidth, 20.0f / windowHeight,
+            20.0f / windowWidth, 20.0f / windowHeight,
+            20.0f / windowWidth, -20.0f / windowHeight,
+        };
+        std::memcpy(&squareVertices[0], &verticesToCopy[0], 8 * sizeof(float));
     }
     else {
         window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL);

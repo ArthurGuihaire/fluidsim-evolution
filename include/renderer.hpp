@@ -1,14 +1,17 @@
 #pragma once
 #include <gpuBuffer.hpp>
 #include <constants.hpp>
+#include <inputMethods.hpp>
 
 class Renderer {
     public:
         Renderer();
-        void renderFrame();
+        void renderFrame(userPointer* mouseInfo);
     private:
-        uint32_t vao;
-        gpuBuffer vertexBuffer;
+        uint32_t fullQuadVAO;
+        uint32_t smallSquareVAO;
+        gpuBuffer fullQuadVBO;
+        gpuBuffer smallSquareVBO;
         gpuBuffer indexBuffer;
 
         uint32_t framebuffers[2];
@@ -19,6 +22,7 @@ class Renderer {
         uint32_t texelSizeUniformLocations[numShaders];
         uint32_t drawSquareShader;
         uint32_t colorUniformLocation;
+        uint32_t mousePosUniformLocation;
 
         uint32_t readIndex = 0;
         uint32_t writeIndex = 1;

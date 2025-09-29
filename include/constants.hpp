@@ -16,6 +16,8 @@ constexpr inline float quadVertices[16] = {
     1.0f, -1.0f, 1.0f, 0.0f
 };
 
+extern float squareVertices[8];
+
 constexpr inline uint32_t quadIndices[] = {
     0, 1, 2,
     2, 3, 0

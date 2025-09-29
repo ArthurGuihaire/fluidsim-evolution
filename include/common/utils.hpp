@@ -12,3 +12,4 @@ constexpr integerType roundUpInt(const integerType input, const uint32_t cutoff)
 void printOpenGLErrors(const char* printString);
 GLFWwindow* initOpenGL();
 std::pair<uint32_t, uint32_t> createFrameBufferTexture();
+glm::vec2 screenToWorld(glm::vec2& screen);

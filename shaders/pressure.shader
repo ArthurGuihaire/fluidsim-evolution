@@ -27,5 +27,7 @@ void main() {
         texture(inputTexture, texCoords - vec2(0.0f, texelSize.y)).y -
         texture(inputTexture, texCoords + vec2(0.0f, texelSize.y)).y;
 
-    fragColor = vec3(texture(inputTexture, texCoords).xy, pressure);
+    vec3 texel = vec3(texture(inputTexture, texCoords));
+
+    fragColor = vec3(texel.xy, texel.z + pressure);
 }
