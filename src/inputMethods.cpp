@@ -6,10 +6,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    userPointer* mousePos = static_cast<userPointer*>(glfwGetWindowUserPointer(window));
+    userPointer* mouseInfo = static_cast<userPointer*>(glfwGetWindowUserPointer(window));
     glm::vec2 pos = {xpos, ypos};
-    mousePos->relativeMovement = mousePos->mousePos - screenToWorld(pos);
-    mousePos->mousePos = screenToWorld(pos);
+    mouseInfo->relativeMovement = mouseInfo->mousePos - screenToWorld(pos);
+    mouseInfo->mousePos = screenToWorld(pos);
 }
 
 userPointer* getMouseInfo(GLFWwindow* window) {

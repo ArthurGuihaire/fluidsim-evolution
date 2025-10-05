@@ -7,7 +7,7 @@
 int main() {
     GLFWwindow* window = initOpenGL();
 
-    userPointer mousePosInfo;
+    userPointer mousePosInfo = {glm::vec2(0.0f, 0.0f), glm::vec2(0.0f, 0.0f)};
     glfwSetWindowUserPointer(window, &mousePosInfo);
     Renderer renderer;
 

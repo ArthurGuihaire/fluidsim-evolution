@@ -14,7 +14,39 @@ GLFWwindow* initOpenGL() {
     return window;
 }
 
-std::pair<uint32_t, uint32_t> createFrameBufferTexture() {
+constexpr uint32_t getCorrespondingFormat(const uint32_t internalFormat) {
+    switch (internalFormat) {
+        case GL_R8:
+        case GL_R8UI:
+        case GL_R16F:
+        case GL_R32F:
+            return GL_RED;
+        case GL_RG8:
+        case GL_RG16F:
+        case GL_RG32F:
+            return GL_RG;
+        case GL_RGB8:
+        case GL_RGB16F:
+        case GL_RGB32F:
+            return GL_RGB;
+        case GL_RGBA8:
+        case GL_RGBA16F:
+        case GL_RGBA32F:
+            return GL_RGBA;
+        case GL_DEPTH_COMPONENT16:
+        case GL_DEPTH_COMPONENT24:
+        case GL_DEPTH_COMPONENT32F:
+            return GL_DEPTH_COMPONENT;
+        case GL_DEPTH24_STENCIL8:
+        case GL_DEPTH32F_STENCIL8:
+            return GL_DEPTH_STENCIL;
+        default:
+            std::cerr << "Unsupported internal format: 0x" << std::hex << internalFormat << std::dec << std::endl;
+            return GL_RGBA;
+    }
+}
+
+std::pair<uint32_t, uint32_t> createFrameBufferTexture(const uint32_t textureFormat, const uint32_t width, const uint32_t height) {
     uint32_t fbo;
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -22,7 +54,9 @@ std::pair<uint32_t, uint32_t> createFrameBufferTexture() {
     uint32_t tex;
     glGenTextures(1, &tex);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+    const uint32_t format = getCorrespondingFormat(textureFormat);
+    glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, format, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -33,13 +67,20 @@ std::pair<uint32_t, uint32_t> createFrameBufferTexture() {
     float borderColor[] = {0.0f, 0.0f, 0.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
-
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer " << fbo << " complete" << std::endl;
+    else {
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        std::cerr << "Framebuffer failed with status: 0x" << std::hex << status << std::dec << std::endl;
+    }
 
     return std::make_pair(fbo, tex);
+}
+
+std::pair<uint32_t, uint32_t> createFrameBufferTexture(const uint32_t textureFormat) {
+    return createFrameBufferTexture(textureFormat, windowWidth, windowHeight);
 }
 
 void printOpenGLErrors(const char* printString) {
@@ -51,4 +92,34 @@ void printOpenGLErrors(const char* printString) {
 
 glm::vec2 screenToWorld(glm::vec2& screen) {
     return {screen.x * 2 / windowWidth - 1, 1 - 2 * screen.y / windowHeight};
+}
+
+void getNextColor(glm::vec3& color, uint32_t& colorState) {
+    switch(colorState) {
+        case 0:
+            color.g++;
+            if (color.g == 255)
+                colorState = 1;
+            break;
+        case 1:
+            color.r--;
+            if (color.r == 0)
+                colorState = 2;
+        case 2:
+            color.b++;
+            if (color.b == 255)
+                colorState = 3;
+        case 3:
+            color.g--;
+            if (color.g == 0)
+                colorState = 4;
+        case 4:
+            color.r++;
+            if (color.r == 255)
+                colorState = 5;
+        case 5:
+            color.b--;
+            if (color.b == 0)
+                colorState = 0;
+    }
 }

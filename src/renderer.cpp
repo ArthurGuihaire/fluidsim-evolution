@@ -3,7 +3,11 @@
 #include <shaderLoader.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-Renderer::Renderer() {
+constexpr uint32_t numJacobiIterations = 25;
+
+Renderer::Renderer()
+ : velIndex(0), divPresIndex(0), colorIndex(0), timeSeconds(glfwGetTime())
+{
     //Setup for full screen quad
     glGenVertexArrays(1, &fullQuadVAO);
     glBindVertexArray(fullQuadVAO);
@@ -14,68 +18,144 @@ Renderer::Renderer() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    
-    indexBuffer.createBuffer(GL_ELEMENT_ARRAY_BUFFER, &quadIndices, sizeof(quadIndices));
 
-    //Setup for small square (UI element)
+    //Setup for user input
     glGenVertexArrays(1, &smallSquareVAO);
     glBindVertexArray(smallSquareVAO);
 
     smallSquareVBO.createBuffer(GL_ARRAY_BUFFER, &squareVertices[0], sizeof(squareVertices));
-    indexBuffer.bind();
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*) 0);
     glEnableVertexAttribArray(0);
 
-    //Setup for framebuffers and textures
-    for (uint32_t i = 0; i < 2; i++) {
-        std::pair<uint32_t, uint32_t> framebufferTexture = createFrameBufferTexture();
-        framebuffers[i] = framebufferTexture.first;
-        textures[i] = framebufferTexture.second;
-    }
+    //Rebind full quad vertex array afterwards
+    glBindVertexArray(fullQuadVAO);
 
-    //Initialize shaders
-    for (uint32_t i = 0; i < numShaders; i++) {
-        ShaderProgramSource shaderSource = parseShader(shaderNames[i]);
-        shaders[i] = createShader(shaderSource.VertexSource, shaderSource.FragmentSource);
-        textureUniformLocations[i] = glGetUniformLocation(shaders[i], "inputTexture");
-        texelSizeUniformLocations[i] = glGetUniformLocation(shaders[i], "texelSize");
-    }
+    //Setup shaders
+    advectionShader = createShader("texture.vert", "advection.frag");
+    dtAdvectionUniform = glGetUniformLocation(advectionShader, "dt");
+    textureAdvectionUniform = glGetUniformLocation(advectionShader, "velocityTexture");
+    texelSizeAdvectionUniform = glGetUniformLocation(advectionShader, "texelSize");
 
-    ShaderProgramSource shaderSource = parseShader("shaders/drawSquare.shader");
-    drawSquareShader = createShader(shaderSource.VertexSource, shaderSource.FragmentSource);
-    mousePosUniformLocation = glGetUniformLocation(drawSquareShader, "mousePos");
-    colorUniformLocation = glGetUniformLocation(drawSquareShader, "inputColor");
+    divergenceShader = createShader("texture.vert", "divergence.frag");
+    textureDivergenceUniform = glGetUniformLocation(divergenceShader, "velocityTexture");
+    texelSizeDivergenceUniform = glGetUniformLocation(divergenceShader, "texelSize");
+
+    pressureShader = createShader("texture.vert", "pressure.frag");
+    texturePressureUniform = glGetUniformLocation(pressureShader, "divPresTexture");
+    texelSizePressureUniform = glGetUniformLocation(pressureShader, "texelSize");
+
+    gradientShader = createShader("texture.vert", "gradient.frag");
+    divPresTextureGradientUniform = glGetUniformLocation(gradientShader, "divPresTexture");
+    velTextureGradientUniform = glGetUniformLocation(gradientShader, "velocityTexture");
+    texelSizeGradientUniform = glGetUniformLocation(gradientShader, "texelSize");
+
+    advectColorShader = createShader("texture.vert", "advectColor.frag");
+    velTextureAdvectColorUniform = glGetUniformLocation(advectColorShader, "velocityTexture");
+    colorTextureAdvectColorUniform = glGetUniformLocation(advectColorShader, "colorTexture");
+    texelSizeAdvectColorUniform = glGetUniformLocation(advectColorShader, "texelSize");
+    dtAdvectColorUniform = glGetUniformLocation(advectColorShader, "dt");
+
+    pushFluidShader = createShader("userInput.vert", "pushFluid.frag");
+    offsetPushFluidUniform = glGetUniformLocation(pushFluidShader, "offset");
+    texturePushFluidUniform = glGetUniformLocation(pushFluidShader, "velocityTexture");
+    forcePushFluidUniform = glGetUniformLocation(pushFluidShader, "pushForce");
+    dtPushFluidUniform = glGetUniformLocation(pushFluidShader, "dt");
+
+    drawColorShader = createShader("draw.vert", "drawColor.frag");
+    offsetDrawColorUniform = glGetUniformLocation(drawColorShader, "offset");
+    colorDrawColorUniform = glGetUniformLocation(drawColorShader, "inputColor"); 
+
+    //Setup for textures and framebuffers
+    std::pair firstBufferPair = createFrameBufferTexture(GL_RG16F);
+    std::pair secondBufferPair = createFrameBufferTexture(GL_RG16F);
+    velocity[0] = FramebufferTexture(firstBufferPair.first, secondBufferPair.second);
+    velocity[1] = FramebufferTexture(secondBufferPair.first, firstBufferPair.second);
+    
+    firstBufferPair = createFrameBufferTexture(GL_RG16F);
+    secondBufferPair = createFrameBufferTexture(GL_RG16F);
+    divergencePressure[0] = FramebufferTexture(firstBufferPair.first, secondBufferPair.second);
+    divergencePressure[1] = FramebufferTexture(secondBufferPair.first, firstBufferPair.second);
+
+    firstBufferPair = createFrameBufferTexture(GL_RGB8);
+    secondBufferPair = createFrameBufferTexture(GL_RGB8);
+    color[0] = FramebufferTexture(firstBufferPair.first, secondBufferPair.second);
+    color[1] = FramebufferTexture(secondBufferPair.first, firstBufferPair.second);
+
+    printOpenGLErrors("Init Error");
 }
 
 void Renderer::renderFrame(userPointer* mouseInfo) {
-    glBindVertexArray(fullQuadVAO);
-    for (float texelSizeMultiplier = 1; texelSizeMultiplier < 4; texelSizeMultiplier++) {
-        for (uint32_t pass = 0; pass < numShaders; pass++) {
-            glUseProgram(shaders[pass]);
-            glBindTexture(GL_TEXTURE_2D, textures[readIndex]);
-            glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[writeIndex]);
-            glUniform1i(textureUniformLocations[pass], 0);
-            glUniform2fv(texelSizeUniformLocations[pass], 1, glm::value_ptr(texelSize * texelSizeMultiplier * texelSizeMultiplier));
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*) 0);
+    float newTime = glfwGetTime();
+    float deltaTime = 1000 * (newTime - timeSeconds);
+    timeSeconds = newTime;
 
-            std::swap(readIndex, writeIndex);
-        }
+    std::cout << "dt: " << deltaTime << "\nMouse position: " << mouseInfo->mousePos.x << ", " << mouseInfo->mousePos.y << std::endl;
+
+    //Step 1: Advection pass
+    //Full quad is already bound
+    velocity[velIndex].setupPass();
+    glUseProgram(advectionShader);
+    glUniform1i(textureAdvectionUniform, 0);
+    glUniform2fv(texelSizeAdvectionUniform, 1, glm::value_ptr(texelSize));
+    glUniform1f(dtAdvectionUniform, deltaTime);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    velIndex = 1 - velIndex; //swap between 0 and 1
+
+    //User input pushForce (step A1)
+    velocity[velIndex].setupPass();
+    glBindVertexArray(smallSquareVAO);
+    glUseProgram(pushFluidShader);
+    glUniform2fv(offsetPushFluidUniform, 1, glm::value_ptr(mouseInfo->mousePos));
+    glUniform1i(texturePushFluidUniform, 0);
+    glUniform1f(dtPushFluidUniform, deltaTime);
+    glUniform2fv(forcePushFluidUniform, 1, glm::value_ptr(mouseInfo->relativeMovement));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    velIndex = 1 - velIndex;
+
+    //User input drawColor (step A2)
+    color[colorIndex].setupFramebuffer();
+    glUseProgram(drawColorShader);
+    glUniform2fv(offsetDrawColorUniform, 1, glm::value_ptr(mouseInfo->mousePos));
+    glUniform3fv(colorDrawColorUniform, 1, glm::value_ptr(drawColor));
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    colorIndex = 1 - colorIndex; //Otherwise it gets overwritten by advection
+
+    //Step 2: compute divergence
+    velocity[velIndex].setupTexture();
+    divergencePressure[divPresIndex].setupFramebuffer();
+    glBindVertexArray(fullQuadVAO);
+    glUseProgram(divergenceShader);
+    glUniform1i(textureDivergenceUniform, 0);
+    glUniform2fv(texelSizeDivergenceUniform, 1, glm::value_ptr(texelSize));
+    divPresIndex = 1 - divPresIndex;
+
+    //Step 3: 25 Jacobi Iterations to estimate pressure
+    glUseProgram(pressureShader); //Shader and uniforms are the same in all iterations
+    glUniform1i(texturePressureUniform, 0);
+    glUniform2fv(texelSizePressureUniform, 1, glm::value_ptr(texelSize));
+    for (uint32_t i = 0; i < numJacobiIterations; i++) {
+        divergencePressure[divPresIndex].setupPass();
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        divPresIndex = 1 - divPresIndex;
     }
 
-    
-    glBindVertexArray(smallSquareVAO);
-    glUseProgram(drawSquareShader);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffers[writeIndex]);
-    //glUniform2fv(mousePosUniformLocation, 1, glm::value_ptr(mouseInfo->mousePos));
-    glUniform2fv(mousePosUniformLocation, 1, glm::value_ptr(mouseInfo->mousePos));
-    float magnitude = mouseInfo->relativeMovement.x * mouseInfo->relativeMovement.x + mouseInfo->relativeMovement.y * mouseInfo->relativeMovement.y;
-    glUniform3f(colorUniformLocation, (mouseInfo->relativeMovement.x + 1) / 2, (mouseInfo->relativeMovement.y + 1) / 2, magnitude);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*) 0);
+    //Step 4: Use the computed pressure (gradient) to update velocity
+    divergencePressure[divPresIndex].setupTexture(GL_TEXTURE0); //Only reading from pressure
+    velocity[divPresIndex].setupPass(GL_TEXTURE1); //We are reading and writing to velocity
+    glUseProgram(gradientShader);
+    glUniform1i(divPresTextureGradientUniform, 0);
+    glUniform1i(velTextureGradientUniform, 1);
+    glUniform2fv(texelSizeGradientUniform, 1, glm::value_ptr(texelSize));
+    velIndex = 1 - velIndex; //Since we're writing to velocity, must switch the index
 
-    std::swap(readIndex, writeIndex);
-
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-    glBlitFramebuffer(0, 0, windowWidth, windowHeight, 0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+    //Step 5: advect color
+    color[colorIndex].setupPass(0); //Read/write to color
+    velocity[velIndex].setupTexture(1); //Read from velocity
+    glUseProgram(advectColorShader);
+    glUniform1i(colorTextureAdvectColorUniform, 0);
+    glUniform1i(velTextureAdvectColorUniform, 1);
+    glUniform2fv(texelSizeAdvectColorUniform, 1, glm::value_ptr(texelSize));
+    glUniform1f(dtAdvectColorUniform, deltaTime);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 }
