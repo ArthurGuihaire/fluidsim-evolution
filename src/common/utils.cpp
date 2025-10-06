@@ -14,6 +14,29 @@ GLFWwindow* initOpenGL() {
     return window;
 }
 
+constexpr uint32_t getTextureType(const uint32_t internalFormat) {
+     switch (internalFormat) {
+        case GL_R8:
+        case GL_RG8:
+        case GL_RGB8:
+        case GL_RGBA8:
+            return GL_UNSIGNED_BYTE;
+        case GL_R16F:
+        case GL_RG16F:
+        case GL_RGB16F:
+        case GL_RGBA16F:
+            return GL_HALF_FLOAT;
+        case GL_R32F:
+        case GL_RG32F:
+        case GL_RGB32F:
+        case GL_RGBA32F:
+            return GL_FLOAT;
+        default:
+            std::cerr << "Unsupported internal format: 0x" << std::hex << internalFormat << std::dec << std::endl;
+            return GL_UNSIGNED_BYTE;
+    }
+}
+
 constexpr uint32_t getCorrespondingFormat(const uint32_t internalFormat) {
     switch (internalFormat) {
         case GL_R8:
@@ -56,7 +79,8 @@ std::pair<uint32_t, uint32_t> createFrameBufferTexture(const uint32_t textureFor
     glBindTexture(GL_TEXTURE_2D, tex);
 
     const uint32_t format = getCorrespondingFormat(textureFormat);
-    glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, format, GL_UNSIGNED_BYTE, NULL);
+    const uint32_t bufferType = getTextureType(textureFormat);
+    glTexImage2D(GL_TEXTURE_2D, 0, textureFormat, width, height, 0, format, bufferType, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -64,15 +88,15 @@ std::pair<uint32_t, uint32_t> createFrameBufferTexture(const uint32_t textureFor
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-    float borderColor[] = {0.0f, 0.0f, 0.0f};
+    float borderColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
 
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if(status == GL_FRAMEBUFFER_COMPLETE)
         std::cout << "Framebuffer " << fbo << " complete" << std::endl;
     else {
-        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         std::cerr << "Framebuffer failed with status: 0x" << std::hex << status << std::dec << std::endl;
     }
 
@@ -98,28 +122,33 @@ void getNextColor(glm::vec3& color, uint32_t& colorState) {
     switch(colorState) {
         case 0:
             color.g++;
-            if (color.g == 255)
+            if (color.g >= 255)
                 colorState = 1;
             break;
         case 1:
             color.r--;
-            if (color.r == 0)
+            if (color.r <= 0)
                 colorState = 2;
+            break;
         case 2:
             color.b++;
-            if (color.b == 255)
+            if (color.b >= 255)
                 colorState = 3;
+            break;
         case 3:
             color.g--;
-            if (color.g == 0)
+            if (color.g <= 0)
                 colorState = 4;
+            break;
         case 4:
             color.r++;
-            if (color.r == 255)
+            if (color.r >= 255)
                 colorState = 5;
+            break;
         case 5:
             color.b--;
-            if (color.b == 0)
+            if (color.b <= 0)
                 colorState = 0;
+            break;
     }
 }

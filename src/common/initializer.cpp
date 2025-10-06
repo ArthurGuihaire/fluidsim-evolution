@@ -39,10 +39,10 @@ GLFWwindow* Initializer::createWindow(bool fullscreen) {
 
         //We can't reinitialize square vertices, but we can memcpy
         float verticesToCopy[16] = {
-            -20.0f / windowWidth, -20.0f / windowHeight, 0.0f, 0.0f,
-            -20.0f / windowWidth, 20.0f / windowHeight, 0.0f, 20.0f / windowHeight, 
-            20.0f / windowWidth, 20.0f / windowHeight, 20.0f / windowWidth, 20.0f / windowHeight, 
-            20.0f / windowWidth, -20.0f / windowHeight, 20.0f / windowWidth, 0.0f
+            -drawSize / windowWidth, -drawSize / windowHeight, 0.0f, 0.0f,
+            -drawSize / windowWidth, drawSize / windowHeight, 0.0f, drawSize / windowHeight, 
+            drawSize / windowWidth, -drawSize / windowHeight, drawSize / windowWidth, 0.0f, 
+            drawSize / windowWidth, drawSize / windowHeight, drawSize / windowWidth, drawSize / windowHeight
         };
         std::memcpy(&squareVertices[0], &verticesToCopy[0], 16 * sizeof(float));
     }

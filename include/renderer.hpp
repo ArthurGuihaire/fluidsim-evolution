@@ -50,6 +50,9 @@ class Renderer {
         uint32_t offsetDrawColorUniform;
         uint32_t colorDrawColorUniform;
 
+        uint32_t visualizeShader;
+        uint32_t textureVisualizeUniform;
+
         //Framebuffers
         FramebufferTexture velocity[2];
         uint32_t velIndex;

@@ -4,6 +4,12 @@ class FramebufferTexture {
         FramebufferTexture(); // useless constructor
         FramebufferTexture(const uint32_t framebuffer, const uint32_t texture);
         ~FramebufferTexture();
+        //Prevent copy but allow assignment
+        FramebufferTexture(const FramebufferTexture&) = delete;
+        FramebufferTexture& operator=(const FramebufferTexture&) = delete;
+        //Allow assignment
+        FramebufferTexture(FramebufferTexture&& other) noexcept;
+        FramebufferTexture& operator=(FramebufferTexture&& other) noexcept;
         void setupFramebuffer();
         void setupTexture();
         void setupTexture(const uint32_t textureBinding);

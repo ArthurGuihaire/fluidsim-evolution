@@ -2,24 +2,36 @@
 #include <constants.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-FramebufferTexture::FramebufferTexture(){} // This constructor does not initialize anything
+FramebufferTexture::FramebufferTexture()
+ : writeFramebuffer(0), readTexture(0) //Prevent random textures and framebuffers from getting deleted
+{} // This constructor does not initialize anything
 
 FramebufferTexture::FramebufferTexture(const uint32_t framebuffer, const uint32_t texture)
  : writeFramebuffer(framebuffer), readTexture(texture)
-{
-    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-    if (status != GL_FRAMEBUFFER_COMPLETE) {
-        printf("Framebuffer not complete! Status = 0x%X\n", status);
-    }
-    else {
-        printf("Framebuffer is complete!\n");
-    }
-}
+{}
 
 FramebufferTexture::~FramebufferTexture() {
     glDeleteFramebuffers(1, &writeFramebuffer);
     glDeleteTextures(1, &readTexture);
+}
+
+FramebufferTexture::FramebufferTexture(FramebufferTexture&& other) noexcept {
+    writeFramebuffer = other.writeFramebuffer;
+    readTexture = other.readTexture;
+    other.writeFramebuffer = 0;
+    other.readTexture = 0;
+}
+
+FramebufferTexture& FramebufferTexture::operator=(FramebufferTexture&& other) noexcept {
+    if (this != &other) {
+        glDeleteFramebuffers(1, &writeFramebuffer);
+        glDeleteTextures(1, &readTexture);
+        writeFramebuffer = other.writeFramebuffer;
+        readTexture = other.readTexture;
+        other.writeFramebuffer = 0;
+        other.readTexture = 0;
+    }
+    return *this;
 }
 
 void FramebufferTexture::setupTexture() {
