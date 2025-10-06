@@ -7,10 +7,10 @@ out vec2 fragColor;
 in vec2 texCoords;
 
 void main() {
-    float neighborPressureSum = 
+    float neighborPressureSum =
         texture(divPresTexture, texCoords - vec2(texelSize.x, 0.0f)).g +
         texture(divPresTexture, texCoords + vec2(texelSize.x, 0.0f)).g +
-        texture(divPresTexture, texCoords - vec2(0.0f, texelSize.y)).g + 
+        texture(divPresTexture, texCoords - vec2(0.0f, texelSize.y)).g +
         texture(divPresTexture, texCoords + vec2(0.0f, texelSize.y)).g;
 
     float divergence = texture(divPresTexture, texCoords).r;

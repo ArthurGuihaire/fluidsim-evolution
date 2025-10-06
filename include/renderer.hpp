@@ -54,13 +54,13 @@ class Renderer {
         uint32_t textureVisualizeUniform;
 
         //Framebuffers
-        FramebufferTexture velocity[2];
+        std::optional<FramebufferTexture> velocity[2];
         uint32_t velIndex;
 
-        FramebufferTexture divergencePressure[2];
+        std::optional<FramebufferTexture> divergencePressure[2];
         uint32_t divPresIndex; //Divergence and pressure
 
-        FramebufferTexture color[2];
+        std::optional<FramebufferTexture> color[2];
         uint32_t colorIndex;
 
         //Other random stuff

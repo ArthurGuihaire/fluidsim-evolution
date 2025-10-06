@@ -7,13 +7,11 @@ uniform vec2 texelSize;
 out vec2 newVelocity;
 
 void main() {
-    vec2 delPressure = vec2(
-        texture(divPresTexture, texCoords + vec2(texelSize.x, 0.0f)).g -
-        texture(divPresTexture, texCoords - vec2(texelSize.x, 0.0f)).g, 
-        texture(divPresTexture, texCoords + vec2(0.0f, texelSize.y)).g - 
-        texture(divPresTexture, texCoords - vec2(0.0f, texelSize.y)).g
-    );
-    //delPressure is double what it should be, since we sampled pixels 2 pixels away
-    //Subtract half delPressure from velocity
-    newVelocity = texture(velocityTexture, texCoords).xy - delPressure / 2;
+    // Central differences with proper scaling
+    float dpdx = (texture(divPresTexture, texCoords + vec2(texelSize.x, 0.0f)).g -
+                  texture(divPresTexture, texCoords - vec2(texelSize.x, 0.0f)).g) / (2.0f * texelSize.x);
+    float dpdy = (texture(divPresTexture, texCoords + vec2(0.0f, texelSize.y)).g -
+                  texture(divPresTexture, texCoords - vec2(0.0f, texelSize.y)).g) / (2.0f * texelSize.y);
+    vec2 gradP = vec2(dpdx, dpdy);
+    newVelocity = texture(velocityTexture, texCoords).xy - gradP;
 }

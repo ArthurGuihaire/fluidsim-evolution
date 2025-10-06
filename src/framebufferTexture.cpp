@@ -8,7 +8,8 @@ FramebufferTexture::FramebufferTexture()
 
 FramebufferTexture::FramebufferTexture(const uint32_t framebuffer, const uint32_t texture)
  : writeFramebuffer(framebuffer), readTexture(texture)
-{}
+{
+}
 
 FramebufferTexture::~FramebufferTexture() {
     glDeleteFramebuffers(1, &writeFramebuffer);
@@ -45,6 +46,10 @@ void FramebufferTexture::setupTexture(const uint32_t textureBinding) {
 
 void FramebufferTexture::setupFramebuffer() {
     glBindFramebuffer(GL_FRAMEBUFFER, writeFramebuffer);
+}
+
+void FramebufferTexture::bindReadFramebuffer() {
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, writeFramebuffer);
 }
 
 void FramebufferTexture::setupPass() {

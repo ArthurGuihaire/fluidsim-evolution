@@ -7,5 +7,5 @@ uniform float dt;
 out vec2 fragColor;
 
 void main() {
-    fragColor = texture(velocityTexture, texCoords).xy + pushForce * dt;
+    fragColor = texture(velocityTexture, texCoords).xy + pushForce;// * dt;
 }

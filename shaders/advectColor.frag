@@ -11,6 +11,9 @@ in vec2 texCoords;
 void main() {
     vec2 velocity = texture(velocityTexture, texCoords).xy;
     vec2 prevPos = texCoords - dt * velocity * texelSize;
-    fragColor = texture(colorTexture, prevPos).xyz * 0.995;
-    //fragColor = texture(colorTexture, texCoords).xyz;// + vec3(0.003f, 0.003, 0.003f);
+    fragColor = (texture(colorTexture, prevPos).xyz +
+        texture(colorTexture, prevPos - vec2(texelSize.x * dt, 0.0f)).xyz +
+        texture(colorTexture, prevPos + vec2(texelSize.x * dt, 0.0f)).xyz +
+        texture(colorTexture, prevPos - vec2(0.0f, texelSize.y * dt)).xyz +
+        texture(colorTexture, prevPos + vec2(0.0f, texelSize.y * dt)).xyz) * 0.995;
 }

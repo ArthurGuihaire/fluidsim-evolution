@@ -11,6 +11,7 @@ class FramebufferTexture {
         FramebufferTexture(FramebufferTexture&& other) noexcept;
         FramebufferTexture& operator=(FramebufferTexture&& other) noexcept;
         void setupFramebuffer();
+        void bindReadFramebuffer();
         void setupTexture();
         void setupTexture(const uint32_t textureBinding);
         void setupPass();
