@@ -72,24 +72,21 @@ Renderer::Renderer()
     centerDrawColorUniform = glGetUniformLocation(drawColorShader, "drawCenter");
     texelSizeDrawColorUniform = glGetUniformLocation(drawColorShader, "texelSize");
 
-    visualizeShader = createShader("texture.vert", "visualize.frag");
-    textureVisualizeUniform = glGetUniformLocation(visualizeShader, "colorTexture");
-
     //Setup for textures and framebuffers
-    std::pair firstBufferPair = createFrameBufferTexture(GL_RG16F);
-    std::pair secondBufferPair = createFrameBufferTexture(GL_RG16F);
+    std::pair firstBufferPair = createFrameBufferTexture(GL_RG16F, textureWidth, textureHeight);
+    std::pair secondBufferPair = createFrameBufferTexture(GL_RG16F, textureWidth, textureHeight);
     std::cout << secondBufferPair.second << std::endl;
     std::cout << firstBufferPair.second << std::endl;
     velocity[0].emplace(FramebufferTexture(firstBufferPair.first, secondBufferPair.second));
     velocity[1].emplace(FramebufferTexture(secondBufferPair.first, firstBufferPair.second));
     
-    firstBufferPair = createFrameBufferTexture(GL_RG16F);
-    secondBufferPair = createFrameBufferTexture(GL_RG16F);
+    firstBufferPair = createFrameBufferTexture(GL_RG16F, textureWidth, textureHeight);
+    secondBufferPair = createFrameBufferTexture(GL_RG16F, textureWidth, textureHeight);
     divergencePressure[0].emplace(FramebufferTexture(firstBufferPair.first, secondBufferPair.second));
     divergencePressure[1].emplace(FramebufferTexture(secondBufferPair.first, firstBufferPair.second));
 
-    firstBufferPair = createFrameBufferTexture(GL_RGB8);
-    secondBufferPair = createFrameBufferTexture(GL_RGB8);
+    firstBufferPair = createFrameBufferTexture(GL_RGB16, textureWidth, textureHeight);
+    secondBufferPair = createFrameBufferTexture(GL_RGB16, textureWidth, textureHeight);
     color[0].emplace(FramebufferTexture(firstBufferPair.first, secondBufferPair.second));
     color[1].emplace(FramebufferTexture(secondBufferPair.first, firstBufferPair.second));
 
@@ -100,8 +97,6 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     float newTime = glfwGetTime();
     float deltaTime = (newTime - timeSeconds);
     timeSeconds = newTime;
-
-    //std::cout << "dt: " << deltaTime << "\nMouse position: " << mouseInfo->mousePos.x << ", " << mouseInfo->mousePos.y << std::endl;
 
     //Step 1: User input
     velocity[velIndex]->setupPass(GL_TEXTURE0);
@@ -126,9 +121,6 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     colorIndex = 1 - colorIndex; //Otherwise it gets overwritten by advection
 
-    /*glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, windowWidth, windowHeight, 0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);*/
-
     //Step 2: compute divergence
     velocity[velIndex]->setupTexture(GL_TEXTURE0);
     divergencePressure[divPresIndex]->setupFramebuffer();
@@ -138,9 +130,6 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glUniform2fv(texelSizeDivergenceUniform, 1, glm::value_ptr(texelSize));
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     divPresIndex = 1 - divPresIndex;
-
-    /*glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, windowWidth, windowHeight, 0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);*/
 
     //Step 3: 25 Jacobi Iterations to estimate pressure
     glUseProgram(pressureShader); //Shader and uniforms are the same in all iterations
@@ -182,13 +171,10 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glUniform1f(dtAdvectColorUniform, deltaTime * 1000);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-    //Visualize
-    color[colorIndex]->setupTexture(GL_TEXTURE0);
-    glBindVertexArray(fullQuadVAO);
+    //Visualize by blitting framebuffer to the screen
+    //Color framebuffer is still bound to GL_FRAMEBUFFER
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glUseProgram(visualizeShader);
-    glUniform1i(textureVisualizeUniform, 0);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBlitFramebuffer(0, 0, textureWidth, textureHeight, 0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 
     getNextColor(drawColor, colorState);
 }

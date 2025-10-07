@@ -53,9 +53,6 @@ class Renderer {
         uint32_t centerDrawColorUniform;
         uint32_t texelSizeDrawColorUniform;
 
-        uint32_t visualizeShader;
-        uint32_t textureVisualizeUniform;
-
         //Framebuffers
         std::optional<FramebufferTexture> velocity[2];
         uint32_t velIndex;

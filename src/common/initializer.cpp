@@ -8,6 +8,8 @@
 //Compiler wants a definition in a cpp file for some reason
 uint32_t windowWidth;
 uint32_t windowHeight;
+uint32_t textureWidth;
+uint32_t textureHeight;
 glm::vec2 texelSize;
 float squareVertices[16];
 
@@ -34,22 +36,19 @@ GLFWwindow* Initializer::createWindow(bool fullscreen) {
         windowWidth = vidMode->width;
         windowHeight = vidMode->height;
 
-        texelSize.x = 1.0f / windowWidth;
-        texelSize.y = 1.0f / windowHeight;
+        textureWidth = windowWidth * scalingFactor;
+        textureHeight = windowHeight * scalingFactor;
+
+        texelSize.x = 1.0f / (textureWidth);
+        texelSize.y = 1.0f / (textureHeight);
 
         //We can't reinitialize square vertices, but we can memcpy
         float verticesToCopy[16] = {
-            -drawSize / windowWidth, -drawSize / windowHeight, 0.0f, 0.0f,
-            -drawSize / windowWidth, drawSize / windowHeight, 0.0f, drawSize / windowHeight, 
-            drawSize / windowWidth, -drawSize / windowHeight, drawSize / windowWidth, 0.0f, 
-            drawSize / windowWidth, drawSize / windowHeight, drawSize / windowWidth, drawSize / windowHeight
+            -drawSize / textureWidth, -drawSize / textureHeight, 0.0f, 0.0f,
+            -drawSize / textureWidth, drawSize / textureHeight, 0.0f, drawSize / textureHeight, 
+            drawSize / textureWidth, -drawSize / textureHeight, drawSize / textureWidth, 0.0f, 
+            drawSize / textureWidth, drawSize / textureHeight, drawSize / textureWidth, drawSize / textureHeight
         };
-        /*float verticesToCopy[16] = {
-            -drawSize / windowWidth, -drawSize / windowHeight, -drawSize / windowWidth, -drawSize / windowHeight,
-            -drawSize / windowWidth, drawSize / windowHeight, -drawSize / windowWidth, drawSize / windowHeight, 
-            drawSize / windowWidth, -drawSize / windowHeight, drawSize / windowWidth, -drawSize / windowHeight, 
-            drawSize / windowWidth, drawSize / windowHeight, drawSize / windowWidth, drawSize / windowHeight
-        };*/
         std::memcpy(&squareVertices[0], &verticesToCopy[0], 16 * sizeof(float));
     }
     else {
