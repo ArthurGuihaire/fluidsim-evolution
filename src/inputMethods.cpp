@@ -8,6 +8,8 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
     textureHeight = height * scalingFactor;
     texelSize.x = 1.0f / textureWidth;
     texelSize.y = 1.0f / textureHeight;
+    windowTexelSize.x = 1.0f / width;
+    windowTexelSize.y = 1.0f / height;
     glViewport(0, 0, textureWidth, textureHeight);
 }
 

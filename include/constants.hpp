@@ -2,7 +2,7 @@
 
 constexpr uint32_t gpuBufferMultiple = 1;
 constexpr uint32_t numShaders = 3;
-\
+
 constexpr float scalingFactor = 0.5f;
 
 constexpr float drawSize = 100.0f * scalingFactor;
@@ -14,6 +14,7 @@ extern uint32_t textureWidth;
 extern uint32_t textureHeight;
 
 extern glm::vec2 texelSize;
+extern glm::vec2 windowTexelSize;
 
 constexpr inline float quadVertices[16] = {
     // Screen space coords    texture coords

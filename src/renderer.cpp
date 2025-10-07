@@ -156,7 +156,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     velocity[velIndex]->setupPass(GL_TEXTURE0);
     glUseProgram(advectionShader);
     glUniform1i(textureAdvectionUniform, 0);
-    glUniform2fv(texelSizeAdvectionUniform, 1, glm::value_ptr(texelSize));
+    glUniform2fv(texelSizeAdvectionUniform, 1, glm::value_ptr(windowTexelSize));
     glUniform1f(dtAdvectionUniform, 5.0f);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     velIndex = 1 - velIndex; //swap between 0 and 1
@@ -167,7 +167,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glUseProgram(advectColorShader);
     glUniform1i(colorTextureAdvectColorUniform, 0);
     glUniform1i(velTextureAdvectColorUniform, 1);
-    glUniform2fv(texelSizeAdvectColorUniform, 1, glm::value_ptr(texelSize));
+    glUniform2fv(texelSizeAdvectColorUniform, 1, glm::value_ptr(windowTexelSize));
     glUniform1f(dtAdvectColorUniform, deltaTime * 1000);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

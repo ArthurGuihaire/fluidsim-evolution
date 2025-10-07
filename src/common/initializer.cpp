@@ -11,6 +11,7 @@ uint32_t windowHeight;
 uint32_t textureWidth;
 uint32_t textureHeight;
 glm::vec2 texelSize;
+glm::vec2 windowTexelSize;
 float squareVertices[16];
 
 Initializer::Initializer() {}
@@ -39,8 +40,11 @@ GLFWwindow* Initializer::createWindow(bool fullscreen) {
         textureWidth = windowWidth * scalingFactor;
         textureHeight = windowHeight * scalingFactor;
 
-        texelSize.x = 1.0f / (textureWidth);
-        texelSize.y = 1.0f / (textureHeight);
+        texelSize.x = 1.0f / textureWidth;
+        texelSize.y = 1.0f / textureHeight;
+
+        windowTexelSize.x = 1.0f / windowWidth;
+        windowTexelSize.y = 1.0f / windowHeight;
 
         //We can't reinitialize square vertices, but we can memcpy
         float verticesToCopy[16] = {
