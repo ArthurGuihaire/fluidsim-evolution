@@ -12,9 +12,7 @@ class FramebufferTexture {
         FramebufferTexture& operator=(FramebufferTexture&& other) noexcept;
         void setupFramebuffer();
         void bindReadFramebuffer();
-        void setupTexture();
         void setupTexture(const uint32_t textureBinding);
-        void setupPass();
         void setupPass(const uint32_t textureBinding);
         void resizeTextures(const uint32_t newFramebuffer, const uint32_t newTexture, const bool blit, const std::optional<uint32_t> newWidth, const std::optional<uint32_t> newHeight);
 

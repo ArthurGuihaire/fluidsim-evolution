@@ -6,5 +6,7 @@ out vec4 fragColor;
 in vec2 texCoords;
 
 void main() {
-    fragColor = vec4(abs(texture(colorTexture, texCoords).xy), 0.0f, 1.0f);
+    //vec4 texel = texture(colorTexture, texCoords);
+    //fragColor = vec4(texel.x, texel.y, -texel.y, 1.0f);
+    fragColor = texture(colorTexture, texCoords);
 }

@@ -8,10 +8,10 @@ in vec2 texCoords;
 
 void main() {
     // Central differences scaled by grid spacing
-    float du_dx = (texture(velocityTexture, texCoords + vec2(texelSize.x, 0.0f)).x -
-                   texture(velocityTexture, texCoords - vec2(texelSize.x, 0.0f)).x) / (2.0f * texelSize.x);
-    float dv_dy = (texture(velocityTexture, texCoords + vec2(0.0f, texelSize.y)).y -
-                   texture(velocityTexture, texCoords - vec2(0.0f, texelSize.y)).y) / (2.0f * texelSize.y);
-    float divergence = du_dx + dv_dy;
-    fragColor = vec2(divergence, 0.0f);
+    float divergence = texture(velocityTexture, texCoords + vec2(texelSize.x, 0.0f)).x -
+                       texture(velocityTexture, texCoords - vec2(texelSize.x, 0.0f)).x + 
+                       texture(velocityTexture, texCoords + vec2(0.0f, texelSize.y)).y -
+                       texture(velocityTexture, texCoords - vec2(0.0f, texelSize.y)).y;
+    //Divergence over 2 because we sampled pixels 2 away
+    fragColor = vec2(divergence / 2, 0.0f);
 }

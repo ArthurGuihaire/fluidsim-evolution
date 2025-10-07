@@ -1,11 +1,21 @@
 #version 330 core
 
-//in vec2 texCoords;
+in vec2 texCoords;
 uniform vec3 inputColor;
-//uniform sampler2D colorTexture;
+uniform float drawRadiusSquared;
+uniform vec2 drawCenter;
+uniform vec2 texelSize;
 out vec3 fragColor;
 
 void main() {
-    //fragColor = texture(colorTexture, texCoords).xyz + inputColor;
-    fragColor = inputColor;
+    vec2 normCoords = texCoords * 2.0f - vec2(1.0f, 1.0f);
+    vec2 deltaNorm = normCoords - drawCenter;                   // difference in [-1, 1] space
+    vec2 deltaPixels = deltaNorm * 0.5 / texelSize;             // convert to pixel units
+    float distanceSquared = dot(deltaPixels, deltaPixels);
+    if (distanceSquared < drawRadiusSquared) {
+        fragColor = inputColor / (distanceSquared + 10.0f);   //Add one to avoid divide by zero
+    }
+    else {
+        discard;
+    }
 }

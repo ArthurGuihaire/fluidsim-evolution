@@ -41,14 +41,17 @@ class Renderer {
         uint32_t dtAdvectColorUniform;
 
         uint32_t pushFluidShader;
-        uint32_t offsetPushFluidUniform;
         uint32_t texturePushFluidUniform;
         uint32_t forcePushFluidUniform;
-        uint32_t dtPushFluidUniform;
+        uint32_t radiusPushFluidUniform;
+        uint32_t centerPushFluidUniform;
+        uint32_t texelSizePushFluidUniform;
 
         uint32_t drawColorShader;
-        uint32_t offsetDrawColorUniform;
-        uint32_t colorDrawColorUniform;
+        uint32_t inputDrawColorUniform;
+        uint32_t radiusDrawColorUniform;
+        uint32_t centerDrawColorUniform;
+        uint32_t texelSizeDrawColorUniform;
 
         uint32_t visualizeShader;
         uint32_t textureVisualizeUniform;
@@ -67,4 +70,5 @@ class Renderer {
         float timeSeconds;
         glm::vec3 drawColor;
         uint32_t colorState;
+        glm::vec2 relativeMovement;
 };

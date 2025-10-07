@@ -35,10 +35,6 @@ FramebufferTexture& FramebufferTexture::operator=(FramebufferTexture&& other) no
     return *this;
 }
 
-void FramebufferTexture::setupTexture() {
-    glBindTexture(GL_TEXTURE_2D, readTexture);
-}
-
 void FramebufferTexture::setupTexture(const uint32_t textureBinding) {
     glActiveTexture(textureBinding);
     glBindTexture(GL_TEXTURE_2D, readTexture);
@@ -50,11 +46,6 @@ void FramebufferTexture::setupFramebuffer() {
 
 void FramebufferTexture::bindReadFramebuffer() {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, writeFramebuffer);
-}
-
-void FramebufferTexture::setupPass() {
-    setupFramebuffer();
-    setupTexture();
 }
 
 void FramebufferTexture::setupPass(const uint32_t textureBinding) {
