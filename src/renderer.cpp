@@ -3,8 +3,7 @@
 #include <shaderLoader.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-constexpr uint32_t numJacobiIterations = 25;
-constexpr float pushRadiusSquared = 400.0f;
+constexpr float pushRadiusSquared = 400.0f * scalingFactor * scalingFactor;
 
 Renderer::Renderer()
  : velIndex(0), divPresIndex(0), colorIndex(0), timeSeconds(glfwGetTime()), drawColor(255.0f, 0.0f, 0.0f), colorState(0), relativeMovement(0.0f)
@@ -14,17 +13,6 @@ Renderer::Renderer()
     glBindVertexArray(fullQuadVAO);
 
     fullQuadVBO.createBuffer(GL_ARRAY_BUFFER, &quadVertices[0], sizeof(quadVertices));
-
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) 0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) (2 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    //Setup for user input
-    glGenVertexArrays(1, &smallSquareVAO);
-    glBindVertexArray(smallSquareVAO);
-
-    smallSquareVBO.createBuffer(GL_ARRAY_BUFFER, &squareVertices[0], sizeof(squareVertices));
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*) 0);
     glEnableVertexAttribArray(0);

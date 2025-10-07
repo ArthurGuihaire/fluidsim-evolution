@@ -1,11 +1,9 @@
 #pragma once
 
 constexpr uint32_t gpuBufferMultiple = 1;
-constexpr uint32_t numShaders = 3;
 
-constexpr float scalingFactor = 0.5f;
-
-constexpr float drawSize = 100.0f * scalingFactor;
+constexpr uint32_t numJacobiIterations = 25;
+constexpr float scalingFactor = 1.0f;
 
 extern uint32_t windowWidth;
 extern uint32_t windowHeight;
@@ -23,5 +21,3 @@ constexpr inline float quadVertices[16] = {
     -1.0f, 1.0f, 0.0f, 1.0f,
     1.0f, 1.0f, 1.0f, 1.0f
 };
-
-extern float squareVertices[16];

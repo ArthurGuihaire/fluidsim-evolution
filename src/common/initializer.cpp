@@ -45,15 +45,6 @@ GLFWwindow* Initializer::createWindow(bool fullscreen) {
 
         windowTexelSize.x = 1.0f / windowWidth;
         windowTexelSize.y = 1.0f / windowHeight;
-
-        //We can't reinitialize square vertices, but we can memcpy
-        float verticesToCopy[16] = {
-            -drawSize / textureWidth, -drawSize / textureHeight, 0.0f, 0.0f,
-            -drawSize / textureWidth, drawSize / textureHeight, 0.0f, drawSize / textureHeight, 
-            drawSize / textureWidth, -drawSize / textureHeight, drawSize / textureWidth, 0.0f, 
-            drawSize / textureWidth, drawSize / textureHeight, drawSize / textureWidth, drawSize / textureHeight
-        };
-        std::memcpy(&squareVertices[0], &verticesToCopy[0], 16 * sizeof(float));
     }
     else {
         window = glfwCreateWindow(width, height, "OpenGL", NULL, NULL);

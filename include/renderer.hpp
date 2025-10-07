@@ -11,9 +11,7 @@ class Renderer {
     private:
         //Vertex stuff
         uint32_t fullQuadVAO;
-        uint32_t smallSquareVAO;
         gpuBuffer fullQuadVBO;
-        gpuBuffer smallSquareVBO;
 
         //Shaders - texelSize and Texture uniforms are stored in framebufferTexture objects
         uint32_t advectionShader;

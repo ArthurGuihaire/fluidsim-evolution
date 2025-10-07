@@ -13,7 +13,8 @@ void main() {
     vec2 deltaPixels = deltaNorm * 0.5 / texelSize;             // convert to pixel units
     float distanceSquared = dot(deltaPixels, deltaPixels);
     if (distanceSquared < drawRadiusSquared) {
-        fragColor = inputColor / (distanceSquared + 10.0f);   //Add one to avoid divide by zero
+        float colorDivider = 1 + (distanceSquared / drawRadiusSquared);
+        fragColor = inputColor / (colorDivider * 256);   //Add one to avoid divide by zero
     }
     else {
         discard;
