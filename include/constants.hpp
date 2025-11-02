@@ -2,8 +2,8 @@
 
 constexpr uint32_t gpuBufferMultiple = 1;
 
-constexpr uint32_t numJacobiIterations = 25;
-constexpr float scalingFactor = 1.0f;
+constexpr uint32_t numJacobiIterations = 35;
+constexpr float scalingFactor = 0.5f;
 
 extern uint32_t windowWidth;
 extern uint32_t windowHeight;

@@ -2,6 +2,7 @@
 #include <utils.hpp>
 #include <shaderLoader.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <elementManager.hpp>
 
 constexpr float pushRadiusSquared = 400.0f * scalingFactor * scalingFactor;
 
@@ -78,6 +79,9 @@ Renderer::Renderer()
     color[0].emplace(FramebufferTexture(firstBufferPair.first, secondBufferPair.second));
     color[1].emplace(FramebufferTexture(secondBufferPair.first, firstBufferPair.second));
 
+    //UI setup
+
+
     printOpenGLErrors("Init Error");
 }
 
@@ -86,7 +90,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     float deltaTime = (newTime - timeSeconds);
     timeSeconds = newTime;
 
-    //Step 1: User input
+    //User input
     velocity[velIndex]->setupPass(GL_TEXTURE0);
     glBindVertexArray(fullQuadVAO);
     glUseProgram(pushFluidShader); //First write to velocity field
@@ -99,7 +103,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     velIndex = 1 - velIndex;
 
-    //User input drawColor Step 2B
+    //User input drawColor
     color[colorIndex]->setupFramebuffer();
     glUseProgram(drawColorShader);
     glUniform3fv(inputDrawColorUniform, 1, glm::value_ptr(drawColor));
@@ -109,7 +113,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     colorIndex = 1 - colorIndex; //Otherwise it gets overwritten by advection
 
-    //Step 2: compute divergence
+    //compute divergence
     velocity[velIndex]->setupTexture(GL_TEXTURE0);
     divergencePressure[divPresIndex]->setupFramebuffer();
     glBindVertexArray(fullQuadVAO);
@@ -119,7 +123,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     divPresIndex = 1 - divPresIndex;
 
-    //Step 3: 25 Jacobi Iterations to estimate pressure
+    //Jacobi Iterations to estimate pressure
     glUseProgram(pressureShader); //Shader and uniforms are the same in all iterations
     glUniform1i(texturePressureUniform, 0);
     glUniform2fv(texelSizePressureUniform, 1, glm::value_ptr(texelSize));
@@ -129,7 +133,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
         divPresIndex = 1 - divPresIndex;
     }
 
-    //Step 4: Use the computed pressure (gradient) to update velocity
+    //Use the computed pressure (gradient) to update velocity
     divergencePressure[divPresIndex]->setupTexture(GL_TEXTURE0); //Only reading from pressure
     velocity[velIndex]->setupPass(GL_TEXTURE1); //We are reading and writing to velocity
     glUseProgram(gradientShader);
@@ -139,7 +143,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     velIndex = 1 - velIndex; //Since we're writing to velocity, must switch the index
 
-    //Step 5: Advection pass
+    //velocity dvection pass
     //Full quad is already bound
     velocity[velIndex]->setupPass(GL_TEXTURE0);
     glUseProgram(advectionShader);
@@ -149,7 +153,7 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     velIndex = 1 - velIndex; //swap between 0 and 1
 
-    //Step 6: advect color
+    //advect color
     color[colorIndex]->setupPass(GL_TEXTURE0); //Read/write to color
     velocity[velIndex]->setupTexture(GL_TEXTURE1); //Read from velocity
     glUseProgram(advectColorShader);
