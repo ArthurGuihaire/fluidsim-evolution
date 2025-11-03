@@ -3,6 +3,7 @@
 #include <constants.hpp>
 #include <inputMethods.hpp>
 #include <framebufferTexture.hpp>
+#include <elementManager.hpp>
 
 class Renderer {
     public:
@@ -60,6 +61,9 @@ class Renderer {
 
         std::optional<FramebufferTexture> color[2];
         uint32_t colorIndex;
+
+        //UI stuff
+        ElementManager elementManager;
 
         //Other random stuff
         float timeSeconds;

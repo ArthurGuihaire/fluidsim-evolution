@@ -31,12 +31,15 @@ gpuBuffer::~gpuBuffer() {
     glDeleteBuffers(1, &m_RendererID);
 }
 
-void gpuBuffer::createBuffer(const unsigned int bufferType) {
+//For reserving space but not adding data
+void gpuBuffer::allocateBuffer(const unsigned int bufferType) {
     m_bufferType = bufferType;
+    m_bufferSize = gpuBufferMultiple;
     glBindBuffer(m_bufferType, m_RendererID);
     glBufferData(m_bufferType, gpuBufferMultiple, nullptr, GL_STATIC_DRAW);
 }
 
+//Can be used to create buffer when the default constructor was called
 void gpuBuffer::createBuffer(const unsigned int bufferType, const void* data, const unsigned int sizeBytes) {
     m_bufferType = bufferType;
     m_bufferSize = roundUpInt(sizeBytes, gpuBufferMultiple);
@@ -70,6 +73,13 @@ void gpuBuffer::removeData(const unsigned int sizeBytes) {
 }
 
 void gpuBuffer::uploadBuffer(const void* data, const unsigned int sizeBytes) {
+    m_bufferSize = sizeBytes;
+    m_usedMemory = sizeBytes;
+    glBindBuffer(m_bufferType, m_RendererID);
+    glBufferData(m_bufferType, m_bufferSize, data, GL_STATIC_DRAW);
+}
+
+void gpuBuffer::uploadBufferReserve(const void* data, const unsigned int sizeBytes) {
     m_bufferSize = roundUpInt(sizeBytes, gpuBufferMultiple);
     m_usedMemory = sizeBytes;
     glBindBuffer(m_bufferType, m_RendererID);

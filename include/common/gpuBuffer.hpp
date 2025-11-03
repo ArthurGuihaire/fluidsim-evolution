@@ -6,7 +6,7 @@ class gpuBuffer {
         gpuBuffer(const unsigned int bufferType);
         gpuBuffer();
         ~gpuBuffer();
-        void createBuffer(const unsigned int bufferType);
+        void allocateBuffer(const unsigned int bufferType);
         void createBuffer(const unsigned int bufferType, const void* data, const unsigned int sizeBytes);
         unsigned int getUsedMemorySize();
         unsigned int getBufferSize();
@@ -14,6 +14,7 @@ class gpuBuffer {
         void addData(const void* data, const unsigned int sizeBytes);
         void removeData(const unsigned int sizeBytes);
         void uploadBuffer(const void* data, const unsigned int sizeBytes);
+        void uploadBufferReserve(const void* data, const unsigned int sizeBytes);
         void bind() const;
         void unbind() const;
     private:

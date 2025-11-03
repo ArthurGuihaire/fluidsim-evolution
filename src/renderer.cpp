@@ -2,9 +2,10 @@
 #include <utils.hpp>
 #include <shaderLoader.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <elementManager.hpp>
 
 constexpr float pushRadiusSquared = 400.0f * scalingFactor * scalingFactor;
+
+void onClickExample(){}
 
 Renderer::Renderer()
  : velIndex(0), divPresIndex(0), colorIndex(0), timeSeconds(glfwGetTime()), drawColor(255.0f, 0.0f, 0.0f), colorState(0), relativeMovement(0.0f)
@@ -80,7 +81,8 @@ Renderer::Renderer()
     color[1].emplace(FramebufferTexture(secondBufferPair.first, firstBufferPair.second));
 
     //UI setup
-
+    float boundingBox[4] = { 0.8f, -1.0f, 1.0f, 1.0f };
+    elementManager.addElement(onClickExample, boundingBox);
 
     printOpenGLErrors("Init Error");
 }
@@ -167,6 +169,11 @@ void Renderer::renderFrame(userPointer* mouseInfo) {
     //Color framebuffer is still bound to GL_FRAMEBUFFER
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
     glBlitFramebuffer(0, 0, textureWidth, textureHeight, 0, 0, windowWidth, windowHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+
+    //Render UI, since framebuffer 0 is bound this won't be considered fluid
+    printOpenGLErrors("before UI render");
+    elementManager.renderUI();
+    printOpenGLErrors("after UI render");
 
     getNextColor(drawColor, colorState);
 }

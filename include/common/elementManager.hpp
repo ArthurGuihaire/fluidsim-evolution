@@ -1,6 +1,13 @@
-#include <renderer.hpp>
 #include <UIElement.hpp>
 #include <dynamicArray.hpp>
+#include <gpuBuffer.hpp>
+
+typedef struct {
+    float boundingBox[4];
+    float roundingRadius;
+    glm::vec4 color;
+} UIElementData;
+
 class ElementManager {
     public:
         ElementManager();
@@ -9,11 +16,9 @@ class ElementManager {
     private:
         std::vector<UIElement> elements;
         uint32_t vao;
-        dynamicArray<float> vertices;
-        gpuBuffer vertexBuffer;
 
-        gpuBuffer indexBuffer;
-        dynamicArray<uint32_t> indices;
+        dynamicArray<UIElementData> elementData;
+        gpuBuffer elementDataBuffer;
 
         uint32_t roundedCornerShader;
 };
