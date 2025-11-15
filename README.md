@@ -8,7 +8,7 @@ Real-time 2D fluid simulation created in C++ and GLSL Shaders (OpenGL)
 - Build dependencies:
   - CMake
   - make
-  - gcc
+  - g++
 ##### Steps:
 - Clone the repo and cd into it
 - `mkdir build && cd build`
