@@ -28,13 +28,14 @@ ElementManager::ElementManager()
     glVertexAttribDivisor(2, 1);
 
     roundedCornerShader = createShader("UI/rect.vert", "UI/rounded.frag");
+    printOpenGLErrors("Constructor error");
 }
 
 void ElementManager::addElement(void (*onClickFunction)(), float boundingBox[4]) {
     elements.emplace_back(onClickFunction, boundingBox[0], boundingBox[2], boundingBox[1], boundingBox[3]);
 
     UIElementData newElementData {
-        {boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3]}, 0.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)};
+        {boundingBox[0], boundingBox[1], boundingBox[2], boundingBox[3]}, 1.0f, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f)};
 
     elementData.add(newElementData);
     if (elementDataBuffer.getUsedMemorySize() + sizeof(UIElementData) > elementDataBuffer.getBufferSize()) {

@@ -13,8 +13,8 @@ flat out float radius;
 uniform vec2 windowSize;
 
 void main() {
-    uint xIndex = gl_VertexID & 0x00000001;
-    uint yIndex = (gl_VertexID & 0x00000002) + 1;
+    int xIndex = gl_VertexID & 0x00000001;
+    int yIndex = (gl_VertexID & 0x00000002) + 1;
     vec2 position = vec2(boundingBox[xIndex], boundingBox[yIndex]);
     gl_Position = vec4(position, 0.0f, 1.0f);
 
