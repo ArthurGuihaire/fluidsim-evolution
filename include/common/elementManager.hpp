@@ -1,3 +1,4 @@
+#include <vector>
 #include <UIElement.hpp>
 #include <dynamicArray.hpp>
 #include <gpuBuffer.hpp>
